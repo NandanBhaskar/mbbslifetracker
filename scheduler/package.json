@@ -1,0 +1,12 @@
+{
+  "name": "mbbs-life-tracker-scheduler",
+  "version": "1.0.0",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "run": "node run-notifications.js"
+  },
+  "dependencies": {
+    "firebase-admin": "^13.5.0"
+  }
+}

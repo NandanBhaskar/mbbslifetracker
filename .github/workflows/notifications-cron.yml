@@ -1,0 +1,75 @@
+name: MBBS Notifications Cron
+
+on:
+  schedule:
+    # 8:00 PM IST daily (2:30 PM UTC)
+    - cron: "30 14 * * *"
+    # 7:00 PM IST Sundays (1:30 PM UTC)
+    - cron: "30 13 * * 0"
+    # 9:00 AM IST daily (3:30 AM UTC)
+    - cron: "30 3 * * *"
+  workflow_dispatch:
+    inputs:
+      job:
+        description: "Job to run: ttly, weekly, exam, or all"
+        required: true
+        default: "all"
+      dry_run:
+        description: "true = log only, no notifications sent"
+        required: true
+        default: "true"
+
+jobs:
+  ttly:
+    if: github.event_name == 'schedule' && github.event.schedule == '30 14 * * *' || github.event_name == 'workflow_dispatch' && (github.event.inputs.job == 'ttly' || github.event.inputs.job == 'all')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install scheduler deps
+        run: npm install
+        working-directory: scheduler
+      - name: Run TTLY nudge
+        run: node run-notifications.js ttly
+        working-directory: scheduler
+        env:
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run || 'false' }}
+
+  weekly:
+    if: github.event_name == 'schedule' && github.event.schedule == '30 13 * * 0' || github.event_name == 'workflow_dispatch' && (github.event.inputs.job == 'weekly' || github.event.inputs.job == 'all')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install scheduler deps
+        run: npm install
+        working-directory: scheduler
+      - name: Run weekly rating nudge
+        run: node run-notifications.js weekly
+        working-directory: scheduler
+        env:
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run || 'false' }}
+
+  exam:
+    if: github.event_name == 'schedule' && github.event.schedule == '30 3 * * *' || github.event_name == 'workflow_dispatch' && (github.event.inputs.job == 'exam' || github.event.inputs.job == 'all')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install scheduler deps
+        run: npm install
+        working-directory: scheduler
+      - name: Run exam countdown reminder
+        run: node run-notifications.js exam
+        working-directory: scheduler
+        env:
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run || 'false' }}
