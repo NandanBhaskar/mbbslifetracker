@@ -1,40 +1,46 @@
 const admin = require("firebase-admin");
 
-const YEAR_MONTHS = [13, 13, 12, 13, 12];
-const YEAR_IDS = ["y1", "y2", "y3a", "y3b", "int"];
 const DRY_RUN = process.env.DRY_RUN === "true";
 
 function parseServiceAccount() {
   const raw = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
-  if (!raw) {
-    throw new Error("Missing FIREBASE_SERVICE_ACCOUNT_JSON secret.");
-  }
-  return JSON.parse(raw);
+  if (!raw) throw new Error("MISSING SECRET: FIREBASE_SERVICE_ACCOUNT_JSON is empty");
+  console.log("Secret length:", raw.length, "| First char:", raw[0]);
+  const parsed = JSON.parse(raw);
+  console.log("Project ID:", parsed.project_id);
+  return parsed;
 }
 
-function setupFirebase() {
+async function main() {
+  const job = process.argv[2];
+  console.log("Job:", job);
+  console.log("Mode:", DRY_RUN ? "DRY_RUN" : "LIVE_SEND");
+
   const serviceAccount = parseServiceAccount();
-  console.log("Project ID from key:", serviceAccount.project_id);
+
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
     projectId: serviceAccount.project_id,
   });
+
   const db = admin.firestore();
-  console.log("Firestore initialized");
-  return {
-    db,
-    messaging: admin.messaging(),
-  };
+  console.log("Firestore instance created");
+
+  try {
+    const snap = await db.collection("users").limit(1).get();
+    console.log("Firestore query SUCCESS — docs found:", snap.size);
+  } catch (err) {
+    console.error("Firestore query FAILED:");
+    console.error("Code:", err.code);
+    console.error("Message:", err.message);
+    throw err;
+  }
 }
 
-function weeksInMonths(m) {
-  return Math.round((m * 365.25) / 12 / 7);
-}
-
-function getCurrentWeekNumber(startDateStr) {
-  if (!startDateStr) return null;
-  const start = new Date(startDateStr + "T00:00:00");
-  const now = new Date();
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});  const now = new Date();
   now.setHours(0, 0, 0, 0);
   const diffMs = now - start;
   if (diffMs < 0) return null;
