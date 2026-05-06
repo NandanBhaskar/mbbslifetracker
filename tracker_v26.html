@@ -1825,7 +1825,6 @@ let state = {
   yearRatingModal: null,   // yearId being rated at year level
   ttlyDismissed: sessionStorage.getItem("mbbs_ttly_dismissed") === "1",
   exams:         JSON.parse(localStorage.getItem("mbbs_exams") || "[]"),
-  _notificationsEnabled: true,
   _fbUser:       null,     // Firebase user object
   _fbLoaded:     false,    // true once Firestore data has been fetched once
 };
@@ -1874,7 +1873,7 @@ function _syncToFirestore() {
     weekNotes:  state.weekNotes,
     weekPhotos: state.weekPhotos,
     letters:    state.letters,
-    exams:      state.exams,
+    exams:      state.exams,       // used by Cloud Function examCountdownReminder
     updatedAt:  Date.now(),
   }).catch(err => console.warn("Firestore save failed:", err));
 }
@@ -3698,14 +3697,12 @@ function _applyFirestoreData(d) {
   if (d.weekPhotos !== undefined) state.weekPhotos = d.weekPhotos;
   if (d.letters    !== undefined) state.letters    = d.letters;
   if (d.exams      !== undefined) state.exams      = d.exams;
-  if (d.notificationsEnabled !== undefined) state._notificationsEnabled = d.notificationsEnabled;
   localStorage.setItem("mbbs_start",     state.startDate);
   localStorage.setItem("mbbs_scores",    JSON.stringify(state.scores));
   localStorage.setItem("mbbs_overrides", JSON.stringify(state.overrides));
   localStorage.setItem("mbbs_notes",     JSON.stringify(state.weekNotes));
   localStorage.setItem("mbbs_photos",    JSON.stringify(state.weekPhotos));
   localStorage.setItem("mbbs_letters",   JSON.stringify(state.letters));
-  localStorage.setItem("mbbs_exams",     JSON.stringify(state.exams));
 }
 
 function _showSyncBadge(text, color) {
@@ -3726,43 +3723,21 @@ function _showSyncBadge(text, color) {
 }
 
 // ── After auth/guest: attach Firestore listener and enter app ─────
-function _updateAuthBar() {
+async function _updateAuthBar() {
   const bar = document.getElementById("_authStatusBar");
   if (!bar) return;
   const user = state._fbUser;
   if (user) {
-    const notifOn = state._notificationsEnabled !== false;
-    const notifLabel = notifOn ? "Notifications: On" : "Notifications: Off";
+    // Fetch current notification preference to show correct toggle label
+    let notifEnabled = false;
+    try {
+      const doc = await _db.collection("users").doc(user.uid).get();
+      notifEnabled = doc.data()?.notificationsEnabled ?? false;
+    } catch (e) { /* ignore */ }
+    const notifLabel = notifEnabled ? "🔔 Notifs on" : "🔕 Notifs off";
     bar.innerHTML = `<span style="color:var(--muted)">Signed in as <strong style="font-style:normal">${user.displayName || user.email}</strong> · <a onclick="toggleNotifications()" style="color:#6366f1;cursor:pointer;text-underline-offset:3px;text-decoration:underline">${notifLabel}</a> · <a onclick="_signOut()" style="color:#6366f1;cursor:pointer;text-underline-offset:3px;text-decoration:underline">Sign out</a></span>`;
   } else {
     bar.innerHTML = `<span>You're in guest mode — data saved locally only. <a onclick="_switchToGoogle()" style="color:#6366f1;cursor:pointer;text-underline-offset:3px;text-decoration:underline">Sign in with Google to sync</a></span>`;
-  }
-}
-
-// Optional user preference toggle for notification nudges
-async function toggleNotifications() {
-  const user = state._fbUser;
-  if (!user) {
-    alert("Sign in with Google to use notifications.");
-    return;
-  }
-
-  try {
-    const doc = await _db.collection("users").doc(user.uid).get();
-    const current = doc.data()?.notificationsEnabled ?? false;
-    const next = !current;
-
-    await _db.collection("users").doc(user.uid).set({
-      notificationsEnabled: next,
-      updatedAt: Date.now()
-    }, { merge: true });
-
-    state._notificationsEnabled = next;
-    _updateAuthBar();
-    _showSyncBadge(next ? "🔔 Notifications on" : "🔕 Notifications off", "ok");
-  } catch (err) {
-    console.warn("Toggle notifications failed:", err);
-    _showSyncBadge("Couldn't update notifications", "err");
   }
 }
 
@@ -3776,8 +3751,29 @@ function _signOut() {
   });
 }
 
+function _switchToGoogle() {
+  const provider = new firebase.auth.GoogleAuthProvider();
+  _auth.signInWithPopup(provider).then(result => {
+    state._fbUser = result.user;
+    _initFCM(result.user);   // request notification permission for this device
+    localStorage.removeItem("mbbs_auth_choice");
+    // Upload local data to this Google account
+    _syncToFirestore();
+    _updateAuthBar();
+    _showSyncBadge("✓ Signed in & synced", "ok");
+    // Start listening for future changes
+    _db.collection("users").doc(result.user.uid).onSnapshot(snap => {
+      if (snap.exists) _applyFirestoreData(snap.data());
+      render();
+    });
+  }).catch(err => {
+    console.warn("Switch to Google failed:", err);
+    _showSyncBadge("Sign-in failed — allow popups and try again", "err");
+  });
+}
+
 // ── FCM: Request permission and save token ────────────────────────
-const VAPID_KEY = "YOUR_VAPID_KEY_FROM_FIREBASE_CONSOLE";
+const VAPID_KEY = BO8iBosRezYjj4IYfFoB5Mldo1Q4DEHB-hAYV53i5MY168yRCbGUjynWqGtfLxtn1EMRz6gD8gg0ePjQHrvxOm0
 
 async function _initFCM(user) {
   if (!user) return; // Only for signed-in users (guests can't receive server-side pushes)
@@ -3812,25 +3808,32 @@ async function _initFCM(user) {
   }
 }
 
-function _switchToGoogle() {
-  const provider = new firebase.auth.GoogleAuthProvider();
-  _auth.signInWithPopup(provider).then(result => {
-    state._fbUser = result.user;
-    _initFCM(result.user);
-    localStorage.removeItem("mbbs_auth_choice");
-    // Upload local data to this Google account
-    _syncToFirestore();
+// ── FCM: Toggle notifications on/off ────────────────────────────
+async function toggleNotifications() {
+  const user = state._fbUser;
+  if (!user) {
+    alert("Sign in with Google to use notifications.");
+    return;
+  }
+
+  try {
+    const doc = await _db.collection("users").doc(user.uid).get();
+    const current = doc.data()?.notificationsEnabled ?? false;
+    const next = !current;
+
+    await _db.collection("users").doc(user.uid).set({
+      notificationsEnabled: next,
+      updatedAt: Date.now()
+    }, { merge: true });
+
+    if (next) await _initFCM(user);
+
+    _showSyncBadge(next ? "\uD83D\uDD14 Notifications on" : "\uD83D\uDD15 Notifications off", "ok");
     _updateAuthBar();
-    _showSyncBadge("✓ Signed in & synced", "ok");
-    // Start listening for future changes
-    _db.collection("users").doc(result.user.uid).onSnapshot(snap => {
-      if (snap.exists) _applyFirestoreData(snap.data());
-      render();
-    });
-  }).catch(err => {
-    console.warn("Switch to Google failed:", err);
-    _showSyncBadge("Sign-in failed — allow popups and try again", "err");
-  });
+  } catch (err) {
+    console.warn("Toggle notifications failed:", err);
+    _showSyncBadge("Could not update notification setting", "err");
+  }
 }
 
 function _enterApp(user) {
@@ -3931,7 +3934,7 @@ function _showWelcomeScreen() {
         <p style="font-size:0.78rem;color:#ef4444;text-align:center;margin-bottom:14px;font-style:italic">
           Sign-in failed — please allow popups for this site, then try again.
         </p>
-        <button class="welcome-btn-google" id=_btnGoogle2">
+        <button class="welcome-btn-google" id="_btnGoogle2">
           <svg width="18" height="18" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
             <path fill="#fff" d="M44.5 20H24v8.5h11.8C34.7 33.9 30 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 4.1 29.6 2 24 2 11.8 2 2 11.8 2 24s9.8 22 22 22c11 0 21-8 21-22 0-1.3-.2-2.7-.5-4z"/>
           </svg>
