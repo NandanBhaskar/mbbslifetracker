@@ -207,9 +207,7 @@ async function runWeeklyRatingNudge(db, messaging) {
 }
 
 async function runExamCountdownReminder(db, messaging) {
-  const usersSnapshot = await db.collection("users")
-    .where("notificationsEnabled", "==", true)
-    .get();
+  const usersSnapshot = await db.collection("users").get();
 
   const now = new Date();
   now.setHours(0, 0, 0, 0);
