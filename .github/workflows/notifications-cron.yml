@@ -67,6 +67,12 @@ jobs:
       - name: Install scheduler deps
         run: npm install
         working-directory: scheduler
+      - name: Check secret exists
+        run: |
+          echo "Secret length: ${#FIREBASE_SERVICE_ACCOUNT_JSON}"
+          echo "First char: ${FIREBASE_SERVICE_ACCOUNT_JSON:0:1}"
+        env:
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
       - name: Run exam countdown reminder
         run: node run-notifications.js exam
         working-directory: scheduler
