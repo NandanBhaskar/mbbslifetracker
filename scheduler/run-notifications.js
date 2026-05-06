@@ -15,8 +15,9 @@ function parseServiceAccount() {
 function setupFirebase() {
   const serviceAccount = parseServiceAccount();
   admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-  });
+  credential: admin.credential.cert(serviceAccount),
+  projectId: "mbbs-life-tracker-db577",
+});
   return {
     db: admin.firestore(),
     messaging: admin.messaging(),
