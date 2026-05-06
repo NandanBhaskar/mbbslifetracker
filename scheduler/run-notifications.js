@@ -14,12 +14,15 @@ function parseServiceAccount() {
 
 function setupFirebase() {
   const serviceAccount = parseServiceAccount();
+  console.log("Project ID from key:", serviceAccount.project_id);
   admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-  projectId: "mbbs-life-tracker-db577",
-});
+    credential: admin.credential.cert(serviceAccount),
+    projectId: serviceAccount.project_id,
+  });
+  const db = admin.firestore();
+  console.log("Firestore initialized");
   return {
-    db: admin.firestore(),
+    db,
     messaging: admin.messaging(),
   };
 }
