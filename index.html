@@ -794,6 +794,47 @@
       color: var(--muted);
       font-family: 'Lora', Georgia, serif;
     }
+    .tabbar {
+      display: flex;
+      gap: 8px;
+      margin: 0 0 14px;
+      padding: 4px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--card);
+      box-shadow: var(--shadow);
+      position: sticky;
+      top: 8px;
+      z-index: 10;
+    }
+    .tab-btn {
+      flex: 1;
+      border: none;
+      background: none;
+      border-radius: 9px;
+      padding: 9px 8px;
+      font-family: 'Lora', Georgia, serif;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--muted);
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+      white-space: nowrap;
+    }
+    .tab-btn.active {
+      background: #ede9fe;
+      color: #4f46e5;
+    }
+    body.dark .tab-btn.active {
+      background: #312e81;
+      color: #e0e7ff;
+    }
+    .tab-empty {
+      font-size: 0.76rem;
+      color: var(--muted);
+      font-style: italic;
+      padding: 10px 2px 2px;
+    }
 
     /* ── Best / Worst Week Cards ── */
     .bw-grid {
@@ -1004,6 +1045,30 @@
       color: var(--muted);
       font-style: italic;
       padding: 16px 0;
+    }
+    .welcome-sync-note {
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-align: center;
+      margin-top: -4px;
+      margin-bottom: 8px;
+      font-style: italic;
+      opacity: 0.8;
+    }
+    .welcome-progress-bar {
+      width: 100%;
+      height: 3px;
+      background: var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+      margin: 4px 0 12px;
+    }
+    .welcome-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #6366f1, #0ea5e9);
+      border-radius: 4px;
+      width: 0%;
+      transition: width 0.4s ease;
     }
     @keyframes wSpin { to { transform: rotate(360deg); } }
     .welcome-spinner {
@@ -1513,7 +1578,7 @@
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: 16px;
-      padding: 22px 24px 18px;
+      padding: 20px 20px 16px;
       width: min(300px, calc(100vw - 32px));
       max-width: calc(100vw - 32px);
       box-sizing: border-box;
@@ -1555,10 +1620,17 @@
     }
     .tut-tooltip-footer {
       display: flex; align-items: center;
-      justify-content: space-between; gap: 10px;
+      justify-content: space-between; gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+    .tut-tooltip-footer > div:last-child {
+      display: flex; gap: 6px; align-items: center;
+      flex-shrink: 0; margin-left: auto;
     }
     .tut-tooltip-progress {
       display: flex; gap: 4px; align-items: center;
+      flex-shrink: 1; min-width: 0; flex-wrap: wrap;
     }
     .tut-tooltip-dot {
       width: 5px; height: 5px; border-radius: 50%;
@@ -1571,8 +1643,9 @@
       font-size: 0.82rem; font-weight: 600;
       background: var(--text); color: var(--card);
       border: none; border-radius: 8px;
-      padding: 8px 18px; cursor: pointer;
+      padding: 8px 16px; cursor: pointer;
       transition: opacity 0.15s;
+      line-height: 1; white-space: nowrap; flex-shrink: 0;
     }
     .tut-btn-next:hover { opacity: 0.82; }
     .tut-btn-back {
@@ -1580,16 +1653,17 @@
       font-size: 0.82rem; font-weight: 600;
       background: none; color: var(--muted);
       border: 1px solid var(--border); border-radius: 8px;
-      padding: 8px 14px; cursor: pointer;
+      padding: 8px 12px; cursor: pointer;
       transition: border-color 0.15s, color 0.15s;
+      line-height: 1; white-space: nowrap; flex-shrink: 0;
     }
     .tut-btn-back:hover { border-color: var(--muted); color: var(--text); }
     .tut-btn-skip-inline {
       font-family: 'Lora', Georgia, serif;
-      font-size: 0.76rem; background: none; border: none;
+      font-size: 0.72rem; background: none; border: none;
       color: var(--muted); cursor: pointer;
       text-decoration: underline; text-underline-offset: 3px;
-      padding: 0;
+      padding: 0; white-space: nowrap;
     }
     .tut-btn-skip-inline:hover { color: var(--text); }
     .tut-waiting-pulse {
@@ -1754,6 +1828,95 @@
     }
 
     body.dark .exam-item { background: #141210; }
+
+    /* ── Year Stats Modal (side-panel) ── */
+    #yrStatsModalBackdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      z-index: 10010;
+      backdrop-filter: blur(3px);
+      -webkit-backdrop-filter: blur(3px);
+    }
+    #yrStatsModalBackdrop.open { display: flex; align-items: stretch; justify-content: flex-end; }
+    #yrStatsModalPanel {
+      width: min(560px, 100vw);
+      height: 100%;
+      background: var(--card);
+      border-left: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      transform: translateX(100%);
+      transition: transform 0.3s cubic-bezier(0.16,1,0.3,1);
+      box-shadow: -8px 0 40px rgba(0,0,0,0.18);
+    }
+    #yrStatsModalBackdrop.open #yrStatsModalPanel { transform: translateX(0); }
+    .yrsmp-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .yrsmp-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .yrsmp-close {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      width: 34px; height: 34px;
+      cursor: pointer;
+      font-size: 1rem;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--muted);
+      transition: background 0.15s, color 0.15s;
+    }
+    .yrsmp-close:hover { background: var(--border); color: var(--text); }
+    .yrsmp-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 24px 32px;
+    }
+    .yrsmp-section { margin-bottom: 24px; }
+    .yrsmp-section-title {
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .yrsmp-section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+    .view-all-stats-btn {
+      font-family: 'Lora', Georgia, serif;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--c1);
+      background: none;
+      border: 1px solid var(--c1);
+      border-radius: 20px;
+      padding: 4px 12px;
+      cursor: pointer;
+      letter-spacing: 0.02em;
+      transition: background 0.15s;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .view-all-stats-btn:hover { background: rgba(99,102,241,0.1); }
 </style>
 </head>
 <body>
@@ -1825,6 +1988,7 @@ let state = {
   yearRatingModal: null,   // yearId being rated at year level
   ttlyDismissed: sessionStorage.getItem("mbbs_ttly_dismissed") === "1",
   exams:         JSON.parse(localStorage.getItem("mbbs_exams") || "[]"),
+  activeTab:     localStorage.getItem("mbbs_active_tab") || "home",
   _fbUser:       null,     // Firebase user object
   _fbLoaded:     false,    // true once Firestore data has been fetched once
 };
@@ -2272,11 +2436,15 @@ function _renderMain() {
         Score each past week honestly, at the end of it.<br>
         No one is watching. The record is yours alone.
       </p>
-      <button onclick="openSetupGuide()" style="margin-top:18px;font-family:'Lora',Georgia,serif;font-size:0.78rem;background:none;border:1px solid var(--border);border-radius:8px;padding:7px 16px;cursor:pointer;color:var(--muted);transition:border-color 0.15s,color 0.15s;" onmouseover="this.style.borderColor='#999';this.style.color='var(--text)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">Install as app &rarr;</button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:18px">
+        <button onclick="openSetupGuide()" style="font-family:'Lora',Georgia,serif;font-size:0.78rem;background:none;border:1px solid var(--border);border-radius:8px;padding:7px 16px;cursor:pointer;color:var(--muted);transition:border-color 0.15s,color 0.15s;" onmouseover="this.style.borderColor='#999';this.style.color='var(--text)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">Install as app &rarr;</button>
+        <button id="retakeTourBtn" onclick="_retakeTour()" style="font-family:'Lora',Georgia,serif;font-size:0.78rem;background:none;border:1px solid var(--border);border-radius:8px;padding:7px 16px;cursor:pointer;color:var(--muted);transition:border-color 0.15s,color 0.15s;" onmouseover="this.style.borderColor='#999';this.style.color='var(--text)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">🗺️ Take the tour</button>
+        ${state.startDate ? `<button id="changeCalendarBtn" style="font-family:'Lora',Georgia,serif;font-size:0.78rem;background:none;border:1px solid var(--border);border-radius:8px;padding:7px 16px;cursor:pointer;color:var(--muted);transition:border-color 0.15s,color 0.15s;" onmouseover="this.style.borderColor='#999';this.style.color='var(--text)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">&#9998; Change your calendar</button>` : ""}
+      </div>
       <div id="_authStatusBar" style="margin-top:10px;font-family:'Lora',Georgia,serif;font-size:0.74rem;color:var(--muted)"></div>
     </div>
 
-    <div class="card">
+    <div class="card" id="setupCard" ${state.startDate ? 'style="display:none"' : ''}>
       <div class="setup-label">First day of your MBBS</div>
       <p class="setup-sublabel">
         All 5½ years and 5 professional stages are calculated from this one date.<br>
@@ -2327,113 +2495,199 @@ function _renderMain() {
 
     // This time last year
     const ttlyData = getTTLYData(computeYearMeta(parseDate(state.startDate)));
-    html += renderTTLY(ttlyData);
 
-    html += `<div class="stats-card">
-      <div class="stat-item">
-        <span class="stat-num">${elapsed}</span>
-        <span class="stat-label">weeks elapsed</span>
-      </div>
-      <span class="stat-sep">→</span>
-      <div class="stat-item">
-        <span class="stat-num">${scored}</span>
-        <span class="stat-label">weeks scored</span>
-      </div>
-      <span class="stat-sep">→</span>
-      <div class="stat-item">
-        <span class="stat-num">${avg}</span>
-        <span class="stat-label">average score</span>
-      </div>
-      <span class="stat-sep">→</span>
-      <div class="stat-item">
-        <span class="stat-num">${remaining}</span>
-        <span class="stat-label">weeks remaining</span>
-      </div>
-      ${scored > 0 ? `
-      <span class="stat-sep" style="color:#d6d1cb;font-size:1rem;padding:0 10px">·</span>
-      <div class="stat-item">
-        <span class="stat-num"><span class="streak-fire">🔥</span>${currentStreak}</span>
-        <span class="stat-label">current streak</span>
-      </div>
-      <span class="stat-sep">→</span>
-      <div class="stat-item">
-        <span class="stat-num">${bestStreak}</span>
-        <span class="stat-label">best streak</span>
-      </div>` : ""}
+    // Find current year for the primary week grid
+    const curY = yearMeta.find(ym => now >= ym.start && now < ym.end) || yearMeta.filter(ym => now >= ym.start).slice(-1)[0] || yearMeta[0];
+    const curYWeeks = curY ? Array.from({ length: curY.weeks }, (_, i) => ({
+      i, wStart: addWeeks(curY.start, i), wEnd: addWeeks(curY.start, i+1),
+    })) : [];
+    const curYIdx = curY ? curYWeeks.findIndex(w => w.wStart <= now && w.wEnd > now) : -1;
+    const upcomingExams = (state.exams || []).filter(e => e.date && new Date(e.date+"T00:00:00") >= now);
+
+    const activeTab = ["home", "insights", "exams"].includes(state.activeTab) ? state.activeTab : "home";
+
+    html += `<div class="tabbar">
+      <button class="tab-btn ${activeTab === "home" ? "active" : ""}" data-tab="home">Home</button>
+      <button class="tab-btn ${activeTab === "insights" ? "active" : ""}" data-tab="insights">Insights</button>
+      <button class="tab-btn ${activeTab === "exams" ? "active" : ""}" data-tab="exams">Exams${upcomingExams.length ? ` (${upcomingExams.length})` : ""}</button>
     </div>`;
 
-    // Score trend chart (only if ≥2 scored weeks)
-    if (scored >= 2) {
-      html += `<div class="trend-card">
-        <div class="trend-header">
-          <span class="trend-title">Score trend</span>
-          <span class="trend-meta">${scored} week${scored !== 1 ? "s" : ""} scored · scroll right for latest →</span>
+    if (activeTab === "home") {
+      // 1. Stats card
+      html += `<div class="stats-card">
+        <div class="stat-item"><span class="stat-num">${elapsed}</span><span class="stat-label">weeks elapsed</span></div>
+        <span class="stat-sep">&rarr;</span>
+        <div class="stat-item"><span class="stat-num">${scored}</span><span class="stat-label">weeks scored</span></div>
+        <span class="stat-sep">&rarr;</span>
+        <div class="stat-item"><span class="stat-num">${avg}</span><span class="stat-label">avg score</span></div>
+        <span class="stat-sep">&rarr;</span>
+        <div class="stat-item"><span class="stat-num">${remaining}</span><span class="stat-label">wks left</span></div>
+        ${scored > 0 ? `<span class="stat-sep">&rarr;</span>
+        <div class="stat-item"><span class="stat-num"><span class="streak-fire">&#x1F525;</span>${currentStreak}</span><span class="stat-label">streak</span></div>` : ""}
+      </div>`;
+
+      // 1b. Urgent exam countdown (< 5 days away) — shown alongside stats
+      {
+        const urgentExams = (state.exams || [])
+          .map(e => ({ ...e, daysLeft: Math.ceil((parseDate(e.date) - now) / (24*3600*1000)) }))
+          .filter(e => e.daysLeft >= 0 && e.daysLeft < 5)
+          .sort((a, b) => a.daysLeft - b.daysLeft);
+        if (urgentExams.length > 0) {
+          const SC_exam = getScoreColors();
+          urgentExams.forEach(e => {
+            const t = EXAM_TYPES[e.type] || EXAM_TYPES["Other"];
+            const isToday = e.daysLeft === 0;
+            html += `<div style="display:flex;align-items:center;gap:12px;background:${t.bg};border:1.5px solid ${t.color}44;border-radius:12px;padding:10px 16px;margin-bottom:10px;box-shadow:var(--shadow)">
+              <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:44px">
+                <span style="font-size:${isToday?'1.1rem':'1.6rem'};font-weight:800;color:${t.color};line-height:1">${isToday ? "TODAY" : e.daysLeft}</span>
+                ${!isToday ? `<span style="font-size:0.62rem;color:${t.color};opacity:0.8">days</span>` : ""}
+              </div>
+              <div style="flex:1;min-width:0">
+                <div style="font-size:0.82rem;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">🚨 ${escHtml(e.name)}</div>
+                <div style="font-size:0.7rem;color:var(--muted);margin-top:2px">${fmtDate(parseDate(e.date))}</div>
+              </div>
+              <span style="font-size:0.62rem;font-weight:700;padding:2px 8px;border-radius:20px;background:${t.bg};color:${t.color};border:1px solid ${t.color}44;text-transform:uppercase;letter-spacing:0.06em;flex-shrink:0">${e.type}</span>
+            </div>`;
+          });
+        }
+      }
+
+      // 4. Current year week grid
+      if (curY) {
+      const curYPastW = curYWeeks.filter(w => w.wEnd <= now);
+      const curYRated = curYPastW.filter(w => (state.scores[curY.id+"_"+w.i]||0) > 0);
+      const curYAvg = curYRated.length > 0 ? (curYRated.reduce((s,w)=>s+state.scores[curY.id+"_"+w.i],0)/curYRated.length).toFixed(1) : null;
+      const curYPct = Math.min(100,(curYPastW.length/curY.weeks)*100);
+
+      html += `<div class="card" style="margin-bottom:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:6px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="width:4px;height:28px;border-radius:2px;background:${curY.hex};flex-shrink:0"></div>
+            <div>
+              <div style="font-family:'Playfair Display',serif;font-size:0.95rem;font-weight:700;color:var(--text)">${curY.label}</div>
+              <div style="font-size:0.7rem;color:var(--muted)">${curY.sub} &middot; click any past week to rate</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap">
+            ${curYAvg ? `<span class="badge" style="background:${rgba(curY.hex,0.12)};color:${curY.hex}">avg ${curYAvg}/5</span>` : ""}
+            <span class="badge" style="background:${rgba(curY.hex,0.12)};color:${curY.hex}">${curYPct.toFixed(0)}%</span>
+            <button data-focus-year="${curY.id}" style="font-size:0.68rem;font-weight:600;padding:3px 10px;border-radius:20px;border:1px solid ${curY.hex};background:none;color:${curY.hex};cursor:pointer;font-family:'Lora',Georgia,serif;">Focus &rarr;</button>
+          </div>
         </div>
-        <div class="trend-canvas-wrap">
-          <canvas id="trendCanvas"></canvas>
+        <div class="prog-bar-wrap" style="margin-bottom:10px"><div class="prog-bar-fill" style="width:${curYPct}%;background:${curY.hex}"></div></div>
+        <div class="week-grid">`;
+
+      curYWeeks.forEach(w => {
+        const isPast = w.wEnd <= now;
+        const isCur  = w.i === curYIdx;
+        const score  = state.scores[curY.id+"_"+w.i] || 0;
+        const cls = "week-cell" + (isPast||isCur?" clickable":"") + (isCur?" is-current":"");
+        const bg = (isPast||isCur) ? SCORE_COLORS[score] : (document.body.classList.contains("dark")?"#2a2520":"#ede9e3");
+        const op = (!isPast&&!isCur)?0.45:1;
+        const ttl = `Week ${w.i+1}: ${fmtDate(w.wStart)} &ndash; ${fmtDate(w.wEnd)}${isPast?" | Score: "+(score||"unrated"):""}`;
+        html += `<button class="${cls}" style="background:${bg};opacity:${op}" title="${ttl}"
+          ${(isPast||isCur)?`data-yid="${curY.id}" data-wi="${w.i}" data-wlabel="Week ${w.i+1} &middot; ${fmtDate(w.wStart)}"`:""}}></button>`;
+      });
+
+      html += `</div>
+        <div class="legend-card" style="margin-top:10px;margin-bottom:0;padding:8px 0 0;border:none;background:none;box-shadow:none">
+          <div class="legend-item"><span class="swatch" style="background:${document.body.classList.contains('dark')?'#2e2a26':'#e5e1db'}"></span> Stage week (unscored &rarr; score 1&ndash;5)</div>
+          <div class="legend-item"><span class="swatch-outline"></span> This week</div>
         </div>
+      </div>`;
+
+      // 5. Week highlights for current year (below week grid)
+      {
+        const curYWeeksAll = Array.from({ length: curY.weeks }, (_, i) => ({
+          i, wStart: addWeeks(curY.start, i), wEnd: addWeeks(curY.start, i+1),
+        }));
+        const notedWeeksHome = curYWeeksAll.filter(w => {
+          const key = curY.id+"_"+w.i;
+          return state.weekNotes[key] || state.weekPhotos[key];
+        });
+        const highlightCountHome = notedWeeksHome.length;
+        html += `<div class="card" style="margin-bottom:16px">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+            <div>
+              <div style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--text)">Week highlights</div>
+              <div style="font-size:0.75rem;color:var(--muted);margin-top:3px">${highlightCountHome > 0 ? highlightCountHome + " week" + (highlightCountHome!==1?"s":"") + " with notes or photos — " + curY.label : "No highlights yet for " + curY.label}</div>
+            </div>
+            ${highlightCountHome > 0 ? `<button id="homeHighlightsBtn" data-yr-id="${curY.id}" class="btn-ghost" style="font-size:0.82rem;padding:7px 16px;border-radius:20px">View all highlights &rarr;</button>` : ""}
+          </div>
+        </div>`;
+      }
+      }
+    }
+
+    if (activeTab === "insights") {
+      if (scored >= 2) {
+        html += `<div class="trend-card">
+          <div class="trend-header">
+            <span class="trend-title">Score trend</span>
+            <span class="trend-meta">${scored} week${scored!==1?"s":""} scored</span>
+          </div>
+          <div class="trend-canvas-wrap"><canvas id="trendCanvas"></canvas></div>
+        </div>`;
+      } else {
+        html += `<div class="tab-empty">Score trend appears after you rate at least 2 weeks.</div>`;
+      }
+
+      if (scored >= 1) {
+        html += renderBestWorstCards(best, worst);
+      }
+
+      if (ttlyData) {
+        html += renderTTLY(ttlyData);
+      }
+
+      // All-year overview
+    const allYearRows = yearMeta.map(y => {
+      const yW = Array.from({ length: y.weeks }, (_, i) => ({ i, wStart: addWeeks(y.start, i), wEnd: addWeeks(y.start, i+1) }));
+      const yPastW = yW.filter(w => w.wEnd <= now);
+      const yRatedW = yPastW.filter(w => (state.scores[y.id+"_"+w.i]||0) > 0);
+      const yAvg = yRatedW.length > 0 ? (yRatedW.reduce((s,w)=>s+state.scores[y.id+"_"+w.i],0)/yRatedW.length).toFixed(1) : null;
+      const yStarted = now >= y.start;
+      const yEnded = now > y.end;
+      const yPct = yStarted ? Math.min(100,(yPastW.length/y.weeks)*100) : 0;
+      const statusDot = !yStarted
+        ? `<span style="font-size:0.62rem;color:var(--muted);font-style:italic">upcoming</span>`
+        : yEnded
+          ? `<span style="font-size:0.62rem;padding:2px 7px;border-radius:20px;background:${rgba(y.hex,0.12)};color:${y.hex};font-weight:600">done</span>`
+          : `<span style="font-size:0.62rem;padding:2px 7px;border-radius:20px;background:${rgba(y.hex,0.18)};color:${y.hex};font-weight:700;letter-spacing:0.03em">active</span>`;
+      return `<div class="yr-row" style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-radius:10px;transition:background 0.15s;cursor:default">
+        <div style="width:3px;height:32px;border-radius:2px;background:${y.hex};flex-shrink:0"></div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:4px">
+            <span style="font-family:'Playfair Display',serif;font-size:0.82rem;font-weight:700;color:var(--text);white-space:nowrap">${y.label}</span>
+            <span style="font-size:0.67rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${y.sub}</span>
+          </div>
+          <div style="height:5px;background:var(--border);border-radius:3px;overflow:hidden">
+            <div style="height:100%;width:${yPct}%;background:${y.hex};border-radius:3px;transition:width 0.6s ease"></div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+          ${statusDot}
+          <span style="font-size:0.72rem;font-weight:700;color:${y.hex};min-width:32px;text-align:right">${yPct.toFixed(0)}%</span>
+          ${yAvg ? `<span style="font-size:0.68rem;padding:2px 7px;border-radius:20px;background:${rgba(y.hex,0.1)};color:${y.hex};font-weight:600;white-space:nowrap">★ ${yAvg}</span>` : ""}
+          ${yStarted ? `<button data-focus-year="${y.id}" style="font-size:0.65rem;font-weight:600;padding:3px 9px;border-radius:20px;border:1px solid ${rgba(y.hex,0.4)};background:none;color:${y.hex};cursor:pointer;font-family:'Lora',Georgia,serif;white-space:nowrap;transition:border-color 0.15s,background 0.15s" onmouseover="this.style.background='${rgba(y.hex,0.08)}'" onmouseout="this.style.background='none'">Focus →</button>` : ""}
+        </div>
+      </div>`;
+    }).join(`<div style="height:1px;background:var(--border);margin:0 14px"></div>`);
+
+      html += `<div style="border-radius:12px;border:1px solid var(--border);background:var(--card);overflow:hidden;box-shadow:var(--shadow);margin-bottom:8px">
+        <div style="padding:10px 14px 6px;display:flex;align-items:center;gap:8px">
+          <span style="font-size:0.65rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted)">All Years</span>
+          <div style="flex:1;height:1px;background:var(--border)"></div>
+          <span style="font-size:0.65rem;color:var(--muted)">${yearMeta.length} yr${yearMeta.length!==1?"s":""}</span>
+        </div>
+        ${allYearRows}
+        <div style="height:6px"></div>
       </div>`;
     }
 
-    // Best & worst week cards
-    if (scored >= 1) {
-      html += renderBestWorstCards(best, worst);
+    if (activeTab === "exams") {
+      html += renderExamCountdownPanel();
     }
-
-    html += `<div class="legend-card">
-      <div class="legend-item"><span class="swatch" style="background:${document.body.classList.contains('dark')?'#2e2a26':'#e5e1db'}"></span> Stage week (unscored → score 1–5)</div>
-      <div class="legend-item"><span class="swatch-outline"></span> This week</div>
-      <span style="color:#c4bfb8;font-size:0.74rem;font-style:italic">← click any past week to score it</span>
-    </div>`;
-
-    yearMeta.forEach(y => {
-      const weeks = Array.from({ length: y.weeks }, (_, i) => ({
-        i, wStart: addWeeks(y.start, i), wEnd: addWeeks(y.start, i+1),
-      }));
-      const pastW    = weeks.filter(w => w.wEnd <= now);
-      const curIdx   = weeks.findIndex(w => w.wStart <= now && w.wEnd > now);
-      const ratedW   = pastW.filter(w => (state.scores[y.id+"_"+w.i]||0) > 0);
-      const yAvg     = ratedW.length > 0
-        ? (ratedW.reduce((s,w)=>s+state.scores[y.id+"_"+w.i],0)/ratedW.length).toFixed(1)
-        : null;
-      const started  = now >= y.start;
-      const pct      = started ? Math.min(100,(pastW.length/y.weeks)*100) : 0;
-
-      html += `<div class="year-section">
-        <div class="year-header">
-          <div class="year-color-bar" style="background:${y.hex}"></div>
-          <div class="year-title-block">
-            <div class="year-title">${y.label}</div>
-            <div class="year-subtitle">${y.sub}</div>
-          </div>
-          <div class="year-badges">
-            <span class="badge" style="background:${rgba(y.hex,0.12)};color:${y.hex}">${pastW.length}/${y.weeks} wks</span>
-            ${yAvg ? `<span class="badge" style="background:${rgba(y.hex,0.12)};color:${y.hex}">avg ${yAvg}/5</span>` : ""}
-            <span class="badge" style="background:${rgba(y.hex,0.12)};color:${y.hex}">${pct.toFixed(0)}%</span>
-            ${started ? `<button data-focus-year="${y.id}" style="font-size:0.68rem;font-weight:600;padding:3px 10px;border-radius:20px;border:1px solid ${y.hex};background:none;color:${y.hex};cursor:pointer;font-family:'Lora',Georgia,serif;letter-spacing:0.04em;">Focus →</button>` : ""}
-          </div>
-        </div>
-        <div class="year-body">
-          <div class="year-meta">${fmtDate(y.start)} – ${fmtDate(y.end)}</div>
-          <div class="prog-bar-wrap">
-            <div class="prog-bar-fill" style="width:${pct}%;background:${y.hex}"></div>
-          </div>
-          <div class="week-grid">`;
-
-      weeks.forEach(w => {
-        const isPast = w.wEnd <= now;
-        const isCur  = w.i === curIdx;
-        const score  = state.scores[y.id+"_"+w.i] || 0;
-        let cls = "week-cell" + (isPast||isCur ? " clickable" : "") + (isCur ? " is-current" : "");
-        const bg = (isPast||isCur) ? SCORE_COLORS[score] : (document.body.classList.contains("dark") ? "#2a2520" : "#ede9e3");
-        const op = (!isPast&&!isCur) ? 0.45 : 1;
-        const ttl = `Week ${w.i+1}: ${fmtDate(w.wStart)} – ${fmtDate(w.wEnd)}${isPast?" | Score: "+(score||"unrated"):""}`;
-        html += `<button class="${cls}" style="background:${bg};opacity:${op}" title="${ttl}"
-          ${(isPast||isCur)?`data-yid="${y.id}" data-wi="${w.i}" data-wlabel="Week ${w.i+1} · ${fmtDate(w.wStart)}"`:""}></button>`;
-      });
-
-      html += `</div></div></div>`;
-    });
 
     html += `<button class="reset-link" id="resetBtn">Reset all data</button>`;
 
@@ -2472,8 +2726,8 @@ function _renderMain() {
 
   app.innerHTML = html;
 
-  // Draw trend chart (canvas must be in DOM first)
-  if (state.startDate) {
+  // Draw trend chart when Insights tab is active
+  if (state.startDate && state.activeTab === "insights") {
     const _start0c = parseDate(state.startDate);
     const _yearMetaC = computeYearMeta(_start0c);
     requestAnimationFrame(() => renderTrendChart(_yearMetaC, "trendCanvas"));
@@ -2487,8 +2741,23 @@ function _renderMain() {
     // ── Events ──
   const di = document.getElementById("dateInput");
   const bb = document.getElementById("buildBtn");
-  di.addEventListener("input", () => { bb.disabled = !di.value; });
-  bb.addEventListener("click", () => { if (di.value) { state.startDate = di.value; save(); render(); } });
+  if (di && bb) {
+    di.addEventListener("input", () => { bb.disabled = !di.value; });
+    bb.addEventListener("click", () => { if (di.value) { state.startDate = di.value; save(); render(); } });
+  }
+
+  // "Change your calendar" button — toggle the setup card visibility
+  const changeCalBtn = document.getElementById("changeCalendarBtn");
+  if (changeCalBtn) {
+    changeCalBtn.addEventListener("click", () => {
+      const setupCard = document.getElementById("setupCard");
+      if (setupCard) {
+        const isHidden = setupCard.style.display === "none";
+        setupCard.style.display = isHidden ? "" : "none";
+        changeCalBtn.textContent = isHidden ? "✕ Close calendar settings" : "✎ Change your calendar";
+      }
+    });
+  }
 
   document.getElementById("overrideToggle").addEventListener("click", () => {
     state.showOverride = !state.showOverride;
@@ -2515,9 +2784,44 @@ function _renderMain() {
     });
   });
 
+  // Top tab navigation
+  document.querySelectorAll(".tab-btn[data-tab]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const tab = btn.dataset.tab;
+      if (!tab || tab === state.activeTab) return;
+      state.activeTab = tab;
+      localStorage.setItem("mbbs_active_tab", tab);
+      render();
+    });
+  });
+
   // Focus year buttons
   document.querySelectorAll("[data-focus-year]").forEach(btn => {
     btn.addEventListener("click", () => { openYearView(btn.dataset.focusYear); });
+  });
+
+  // Home tab: Week highlights button for current year
+  const homeHighlightsBtn = document.getElementById("homeHighlightsBtn");
+  if (homeHighlightsBtn) {
+    homeHighlightsBtn.addEventListener("click", () => {
+      const yrId = homeHighlightsBtn.dataset.yrId;
+      const start0h = parseDate(state.startDate);
+      const yearMetaH = computeYearMeta(start0h);
+      const yH = yearMetaH.find(m => m.id === yrId);
+      if (yH) {
+        const weeksH = Array.from({ length: yH.weeks }, (_, i) => ({
+          i, wStart: addWeeks(yH.start, i), wEnd: addWeeks(yH.start, i+1),
+        }));
+        renderWeekHighlightsModal(yH, weeksH);
+      }
+    });
+  }
+
+  // Home tab: year reflection button
+  document.querySelectorAll(".yr-reflect-btn[data-reflect-year]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      renderYearRatingModal(btn.dataset.reflectYear);
+    });
   });
 
   // TTLY dismiss
@@ -2534,7 +2838,7 @@ function _renderMain() {
     document.getElementById("resetBtn").addEventListener("click", () => {
       if (confirm("Reset all data? This cannot be undone.")) {
         localStorage.clear();
-        state = { startDate:"", scores:{}, overrides:{}, weekNotes:{}, weekPhotos:{}, letters:{}, showOverride:false, overrideDraft:{}, modal:null, yearView:"auto", ttlyDismissed:false, exams:[], _fbUser: state._fbUser, _fbLoaded: false };
+        state = { startDate:"", scores:{}, overrides:{}, weekNotes:{}, weekPhotos:{}, letters:{}, showOverride:false, overrideDraft:{}, modal:null, yearView:"auto", ttlyDismissed:false, exams:[], activeTab:"home", _fbUser: state._fbUser, _fbLoaded: false };
         render();
       }
     });
@@ -2648,7 +2952,8 @@ function renderYearView(yearId) {
       </div>
     </div>`;
 
-  // Stats row (year-specific)
+  // ── (a) Year Stats card ──
+  const { currentStreak: yrCurStreak, bestStreak: yrBestStreak } = computeStreaks(yearMeta);
   mainHtml += `<div class="stats-card" style="margin-bottom:20px">
     <div class="stat-item"><span class="stat-num">${pastW.length}</span><span class="stat-label">weeks elapsed</span></div>
     <span class="stat-sep">→</span>
@@ -2657,59 +2962,43 @@ function renderYearView(yearId) {
     <div class="stat-item"><span class="stat-num">${yAvg}</span><span class="stat-label">average score</span></div>
     <span class="stat-sep">→</span>
     <div class="stat-item"><span class="stat-num">${Math.max(0,y.weeks-pastW.length)}</span><span class="stat-label">weeks remaining</span></div>
+    ${ratedW.length > 0 ? `
+    <span class="stat-sep" style="color:#d6d1cb;font-size:1rem;padding:0 10px">·</span>
+    <div class="stat-item"><span class="stat-num"><span class="streak-fire">🔥</span>${yrCurStreak}</span><span class="stat-label">current streak</span></div>
+    <span class="stat-sep">→</span>
+    <div class="stat-item"><span class="stat-num">${yrBestStreak}</span><span class="stat-label">best streak</span></div>` : ""}
+    <div style="flex-basis:100%;height:0;margin:0"></div>
+    <div style="width:100%;display:flex;justify-content:flex-end;margin-top:14px;padding-top:12px;border-top:1px solid var(--border)">
+      <button class="view-all-stats-btn" id="openYrStatsModal">View all stats →</button>
+    </div>
   </div>`;
 
   // Progress bar
   mainHtml += `<div class="prog-bar-wrap"><div class="prog-bar-fill" style="width:${pct}%;background:${y.hex}"></div></div>`;
 
-  // Exam Countdown — shown right after stats if any exams exist (top priority), else appended later
-  const hasExams = (state.exams || []).length > 0;
-  if (hasExams) {
+  // ── (b) Exam Countdown — only if there are exams whose date falls within this year ──
+  const yearExams = (state.exams || []).filter(e => {
+    const eDate = parseDate(e.date);
+    return eDate >= y.start && eDate < y.end;
+  });
+  const hasYearExams = yearExams.length > 0;
+  if (hasYearExams) {
     mainHtml += renderExamCountdownPanel();
   }
 
-  // Per-year score trend chart
-  if (ratedW.length >= 2) {
-    mainHtml += `<div class="trend-card" style="margin-bottom:20px">
-      <div class="trend-header">
-        <span class="trend-title">Score trend — ${y.label}</span>
-        <span class="trend-meta">${ratedW.length} week${ratedW.length !== 1 ? "s" : ""} scored</span>
-      </div>
-      <div class="trend-canvas-wrap">
-        <canvas id="yrTrendCanvas"></canvas>
-      </div>
-    </div>`;
-  }
-
-  // Per-year best & worst week cards
-  {
-    const yrWeeks = weeks.filter(w => w.wEnd <= now);
-    const yrScored = yrWeeks.filter(w => (state.scores[y.id+"_"+w.i]||0) > 0);
-    if (yrScored.length >= 1) {
-      let yrBest = null, yrWorst = null;
-      yrScored.forEach(w => {
-        const key = y.id + "_" + w.i;
-        const score = state.scores[key];
-        const info = { key, score, weekNum: w.i + 1, yearLabel: y.label, yearHex: y.hex, wStart: w.wStart, wEnd: w.wEnd, note: state.weekNotes[key] || "" };
-        if (!yrBest  || score > yrBest.score)  yrBest  = info;
-        if (!yrWorst || score < yrWorst.score) yrWorst = info;
-      });
-      mainHtml += renderBestWorstCards(yrBest, yrWorst);
-    }
-  }
-
-  // Letter to Future Self — visible only in first 2 weeks OR last week of the year
+  // ── Letter logic: in writing window → position (c), else position (e) ──
   const letter = state.letters[y.id] || "";
   const twoWeeksInCheck = addWeeks(y.start, 2);
-  const lastWeekStart = addWeeks(y.start, y.weeks - 1);
-  const inFirstTwoWeeks = now < twoWeeksInCheck;
-  const inLastWeek = now >= lastWeekStart && now < y.end;
+  const inFirstTwoWeeks = started && now < twoWeeksInCheck;
+  const inLastWeek = started && now >= addWeeks(y.start, y.weeks - 1) && now < y.end;
   const showLetter = started && (inFirstTwoWeeks || inLastWeek || ended);
-  if (showLetter) {
+
+  // ── (c) Letter to future self — only shown here if in writing window ──
+  if (showLetter && inFirstTwoWeeks) {
     mainHtml += renderLetterCard(y, letter, ended, started);
   }
 
-  // Week grid (larger in year view)
+  // ── (d) Weekly overview ──
   mainHtml += `<div class="card" style="margin-bottom:20px">
     <div style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--text);margin-bottom:14px">Weekly overview</div>
     <div class="week-grid year-view-week-grid">`;
@@ -2733,7 +3022,7 @@ function renderYearView(yearId) {
   });
   mainHtml += `</div></div>`;
 
-  // Week Highlights — button that opens a separate modal window
+  // ── (e) Week Highlights ──
   const notedWeeks = weeks.filter(w => {
     const key = y.id+"_"+w.i;
     return state.weekNotes[key] || state.weekPhotos[key];
@@ -2750,13 +3039,13 @@ function renderYearView(yearId) {
     </div>
   </div>`;
 
-  // Year Reflection Card
-  mainHtml += renderYearReflectionCard(y, ended, started);
-
-  // Exam Countdown — shown at bottom when no exams exist yet (user can add from here)
-  if (!hasExams) {
-    mainHtml += renderExamCountdownPanel();
+  // ── (e) Letter to future self — shown here when NOT in writing window (always shown if started) ──
+  if (started && !inFirstTwoWeeks) {
+    mainHtml += renderLetterCard(y, letter, ended, started);
   }
+
+  // ── (f) Year Reflection Card ──
+  mainHtml += renderYearReflectionCard(y, ended, started);
 
   mainHtml += `</div>`;
 
@@ -2772,13 +3061,6 @@ function renderYearView(yearId) {
 
   // Bind exam panel interactions
   bindExamPanel();
-
-  // Draw per-year trend chart
-  if (ratedW.length >= 2) {
-    // Build a single-year yearMeta array for the chart function
-    const singleYearMeta = [y];
-    requestAnimationFrame(() => renderTrendChart(singleYearMeta, "yrTrendCanvas"));
-  }
 
   // Sidebar year buttons
   yv.querySelectorAll("[data-yvid]").forEach(btn => {
@@ -2828,6 +3110,113 @@ function renderYearView(yearId) {
       renderYearRatingModal(btn.dataset.reflectYear);
     });
   });
+
+  // ── View All Stats Modal ──
+  // Inject backdrop if not present
+  if (!document.getElementById("yrStatsModalBackdrop")) {
+    const bd = document.createElement("div");
+    bd.id = "yrStatsModalBackdrop";
+    bd.innerHTML = `<div id="yrStatsModalPanel">
+      <div class="yrsmp-header">
+        <span class="yrsmp-title" id="yrStatsModalTitle">📊 Stats</span>
+        <button class="yrsmp-close" id="closeYrStatsModal" aria-label="Close">✕</button>
+      </div>
+      <div class="yrsmp-body" id="yrStatsModalBody"></div>
+    </div>`;
+    document.body.appendChild(bd);
+  }
+
+  function buildYrStatsContent() {
+    const SC = getScoreColors();
+    let s = "";
+
+    // Overview grid
+    s += `<div class="yrsmp-section">
+      <div class="yrsmp-section-title">Overview</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:4px">
+        <div style="background:var(--bg);border-radius:10px;padding:12px 14px">
+          <div style="font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;line-height:1;color:var(--text)">${pastW.length}</div>
+          <div style="font-size:0.72rem;color:var(--muted);margin-top:3px">weeks elapsed</div>
+        </div>
+        <div style="background:var(--bg);border-radius:10px;padding:12px 14px">
+          <div style="font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;line-height:1;color:var(--text)">${ratedW.length}</div>
+          <div style="font-size:0.72rem;color:var(--muted);margin-top:3px">weeks scored</div>
+        </div>
+        <div style="background:var(--bg);border-radius:10px;padding:12px 14px">
+          <div style="font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;line-height:1;color:var(--text)">${yAvg}</div>
+          <div style="font-size:0.72rem;color:var(--muted);margin-top:3px">average score</div>
+        </div>
+        <div style="background:var(--bg);border-radius:10px;padding:12px 14px">
+          <div style="font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;line-height:1;color:var(--text)">🔥 ${yrCurStreak}</div>
+          <div style="font-size:0.72rem;color:var(--muted);margin-top:3px">current streak</div>
+        </div>
+      </div>
+    </div>`;
+
+    // Score trend (year-specific)
+    if (ratedW.length >= 2) {
+      s += `<div class="yrsmp-section">
+        <div class="yrsmp-section-title">Score trend — ${y.label}</div>
+        <div class="trend-header" style="margin-bottom:8px">
+          <span class="trend-title">Score trend</span>
+          <span class="trend-meta">${ratedW.length} week${ratedW.length!==1?"s":""} scored</span>
+        </div>
+        <div class="trend-canvas-wrap"><canvas id="yrStatsModalTrendCanvas"></canvas></div>
+      </div>`;
+    }
+
+    // Best & worst weeks for this year
+    const yrWeeks2 = weeks.filter(w => w.wEnd <= now);
+    const yrScored2 = yrWeeks2.filter(w => (state.scores[y.id+"_"+w.i]||0) > 0);
+    if (yrScored2.length >= 1) {
+      let yrBest2 = null, yrWorst2 = null;
+      yrScored2.forEach(w => {
+        const k = y.id + "_" + w.i;
+        const sc = state.scores[k];
+        const info = { key: k, score: sc, weekNum: w.i+1, yearLabel: y.label, yearHex: y.hex, wStart: w.wStart, wEnd: w.wEnd, note: state.weekNotes[k]||"" };
+        if (!yrBest2  || sc > yrBest2.score)  yrBest2  = info;
+        if (!yrWorst2 || sc < yrWorst2.score) yrWorst2 = info;
+      });
+      s += `<div class="yrsmp-section">
+        <div class="yrsmp-section-title">Best &amp; worst weeks</div>
+        ${renderBestWorstCards(yrBest2, yrWorst2)}
+      </div>`;
+    }
+
+    return s;
+  }
+
+  function openYrStatsModal() {
+    const bd2 = document.getElementById("yrStatsModalBackdrop");
+    const body2 = document.getElementById("yrStatsModalBody");
+    const title2 = document.getElementById("yrStatsModalTitle");
+    if (!bd2 || !body2) return;
+    if (title2) title2.textContent = `📊 ${y.label} — Stats`;
+    body2.innerHTML = buildYrStatsContent();
+    bd2.classList.add("open");
+    document.body.style.overflow = "hidden";
+    // Draw chart inside modal
+    if (ratedW.length >= 2) {
+      requestAnimationFrame(() => renderTrendChart([y], "yrStatsModalTrendCanvas"));
+    }
+  }
+  function closeYrStatsModal() {
+    const bd2 = document.getElementById("yrStatsModalBackdrop");
+    if (bd2) bd2.classList.remove("open");
+    document.body.style.overflow = "";
+  }
+
+  const openYrStatsBtn = document.getElementById("openYrStatsModal");
+  if (openYrStatsBtn) openYrStatsBtn.addEventListener("click", openYrStatsModal);
+
+  const closeYrStatsBtn = document.getElementById("closeYrStatsModal");
+  if (closeYrStatsBtn) closeYrStatsBtn.addEventListener("click", closeYrStatsModal);
+
+  const yrStatsBackdrop = document.getElementById("yrStatsModalBackdrop");
+  if (yrStatsBackdrop) {
+    yrStatsBackdrop.addEventListener("click", e => { if (e.target === yrStatsBackdrop) closeYrStatsModal(); });
+  }
+  document.addEventListener("keydown", e => { if (e.key === "Escape") closeYrStatsModal(); }, { once: true });
 }
 
 function renderLetterCard(y, letter, ended, started) {
@@ -3710,16 +4099,44 @@ function _showSyncBadge(text, color) {
   if (!badge) {
     badge = document.createElement("div");
     badge.id = "_fbSyncBadge";
-    badge.style.cssText = "position:fixed;bottom:18px;left:50%;transform:translateX(-50%);padding:6px 16px;border-radius:20px;font-size:0.72rem;font-family:'Lora',Georgia,serif;font-style:italic;z-index:9999;pointer-events:none;transition:opacity 0.4s";
+    badge.style.cssText = "position:fixed;bottom:18px;left:50%;transform:translateX(-50%);padding:8px 18px;border-radius:20px;font-size:0.72rem;font-family:'Lora',Georgia,serif;font-style:italic;z-index:9999;pointer-events:none;transition:opacity 0.4s;min-width:200px;text-align:center";
     document.body.appendChild(badge);
   }
-  badge.textContent = text;
+  // Stop any running progress animation
+  if (badge._progInterval) { clearInterval(badge._progInterval); badge._progInterval = null; }
+  clearTimeout(badge._t);
+
+  const isSyncing = color === "info" && text.toLowerCase().includes("sync");
   badge.style.background = color === "ok" ? "rgba(16,185,129,0.15)" : color === "err" ? "rgba(239,68,68,0.15)" : "rgba(99,102,241,0.12)";
   badge.style.color       = color === "ok" ? "#10b981"              : color === "err" ? "#ef4444"              : "#6366f1";
   badge.style.border      = `1px solid ${color === "ok" ? "rgba(16,185,129,0.3)" : color === "err" ? "rgba(239,68,68,0.3)" : "rgba(99,102,241,0.25)"}`;
   badge.style.opacity     = "1";
-  clearTimeout(badge._t);
-  if (color === "ok") badge._t = setTimeout(() => { badge.style.opacity = "0"; }, 2200);
+
+  if (isSyncing) {
+    badge.innerHTML = `<div style="margin-bottom:4px">${text} <span style="opacity:0.7;font-size:0.68rem">— may take ~30s</span></div>
+      <div style="width:100%;height:3px;background:rgba(99,102,241,0.15);border-radius:4px;overflow:hidden">
+        <div id="_fbSyncBar" style="height:100%;background:linear-gradient(90deg,#6366f1,#0ea5e9);border-radius:4px;width:0%;transition:width 0.5s ease"></div>
+      </div>`;
+    // Animate progress bar to ~85% over 25s (leaves room for actual completion)
+    let pct = 0;
+    badge._progInterval = setInterval(() => {
+      pct = Math.min(pct + (Math.random() * 3 + 1), 85);
+      const bar = document.getElementById("_fbSyncBar");
+      if (bar) bar.style.width = pct + "%";
+      if (pct >= 85) { clearInterval(badge._progInterval); badge._progInterval = null; }
+    }, 800);
+  } else {
+    if (color === "ok") {
+      // Flash progress to 100% then fade
+      badge.innerHTML = `<div style="margin-bottom:4px">${text}</div>
+        <div style="width:100%;height:3px;background:rgba(16,185,129,0.15);border-radius:4px;overflow:hidden">
+          <div style="height:100%;background:#10b981;border-radius:4px;width:100%;transition:width 0.3s ease"></div>
+        </div>`;
+      badge._t = setTimeout(() => { badge.style.opacity = "0"; }, 2500);
+    } else {
+      badge.textContent = text;
+    }
+  }
 }
 
 // ── After auth/guest: attach Firestore listener and enter app ─────
@@ -3773,7 +4190,7 @@ function _switchToGoogle() {
 }
 
 // ── FCM: Request permission and save token ────────────────────────
-const VAPID_KEY = BO8iBosRezYjj4IYfFoB5Mldo1Q4DEHB-hAYV53i5MY168yRCbGUjynWqGtfLxtn1EMRz6gD8gg0ePjQHrvxOm0
+const VAPID_KEY = "BO8iBosRezYjj4IYfFoB5Mldo1Q4DEHB-hAYV53i5MY168yRCbGUjynWqGtfLxtn1EMRz6gD8gg0ePjQHrvxOm0"
 
 async function _initFCM(user) {
   if (!user) return; // Only for signed-in users (guests can't receive server-side pushes)
@@ -3895,6 +4312,14 @@ function _showWelcomeScreen() {
           <span>Add weekly notes, photos, and scores</span>
         </div>
         <div class="welcome-feature-row">
+          <span class="welcome-feature-dot" style="background:#f59e0b"></span>
+          <span><strong>Stats dashboard</strong> — streaks, averages, weeks left, and more</span>
+        </div>
+        <div class="welcome-feature-row">
+          <span class="welcome-feature-dot" style="background:#8b5cf6"></span>
+          <span><strong>Letters</strong> — write to your future self at year's end</span>
+        </div>
+        <div class="welcome-feature-row">
           <span class="welcome-feature-dot" style="background:#0ea5e9"></span>
           <span><strong>Sign in with Google</strong> to sync across all your devices</span>
         </div>
@@ -3986,7 +4411,7 @@ function _showTutorialPrompt() {
   });
   document.getElementById("_tutSkipBtn").addEventListener("click", () => {
     wrap.remove();
-    localStorage.setItem("mbbs_tutorial_done", "1");
+    // Don't permanently mark done — user can still take the tour via the "Take the tour" button
   });
 }
 
@@ -4000,7 +4425,7 @@ let _tutNavigatingBack = false; // prevent auto-advance when going backwards
 const TUT_STEPS = [
   {
     id: "date_input",
-    eyebrow: "Step 1 of 8",
+    eyebrow: "Step 1 of 14",
     title: "Select your start date",
     body: "Pick the very first day of your MBBS. Everything — all 5 years and 5 stages — gets calculated from this one date.",
     action: "Select a date in the date picker below",
@@ -4010,81 +4435,257 @@ const TUT_STEPS = [
   },
   {
     id: "build_calendar",
-    eyebrow: "Step 2 of 8",
+    eyebrow: "Step 2 of 14",
     title: "Build your calendar",
-    body: "Once your date is set, click \"Build my calendar →\" to generate your full MBBS timeline — all 5 professional stages laid out as colourful week grids.",
+    body: "Once your date is set, click \"Build my calendar →\" to generate your full MBBS timeline. You can also expand \"Adjust individual stage dates\" to fine-tune start dates for each professional year if yours don't align perfectly.",
     action: "Click \"Build my calendar →\" to continue",
     waitFor: "calendar_built",
     spotlight: () => document.querySelector(".card"),
     tooltipPos: "right",
   },
   {
-    id: "year_overview",
-    eyebrow: "Step 3 of 8",
-    title: "Your full year view ✦",
-    body: "Each coloured section is one professional year. You can see how many weeks have passed, your average score, and a progress bar at a glance.",
+    id: "stats_bar",
+    eyebrow: "Step 3 of 14",
+    title: "Your stats at a glance",
+    body: "This bar tracks weeks elapsed, weeks you've scored, your overall average, and weeks remaining. Once you start rating weeks you'll also see your current scoring streak here.",
     action: null,
     waitFor: null,
-    spotlight: null,
-    tooltipPos: "bottom-left",
-    noRing: true,
+    onEnter: () => {
+      // Close any year view overlay and ensure we're on the home tab main page
+      const yv = document.getElementById("yearViewRoot");
+      if (yv) yv.remove();
+      // Also clear yearView state so render() doesn't immediately re-open the year view
+      state.yearView = null;
+      if (state.activeTab !== "home") { state.activeTab = "home"; render(); }
+    },
+    spotlight: () => document.querySelector(".stats-card"),
+    tooltipPos: "below",
   },
   {
     id: "week_grid",
-    eyebrow: "Step 4 of 8",
-    title: "Click any past week",
-    body: "Each small square is one week. Click a past week (or the current one) to score it 1–5, add notes, and attach a photo. Colour-coded by your rating.",
-    action: "Try clicking a week square — the modal will open. Close it when done.",
+    eyebrow: "Step 4 of 14",
+    title: "Your current year",
+    body: "This is your active professional year — each small square is one week, colour-coded by score. Past and current weeks are clickable. Future weeks are dimmed.",
+    action: null,
+    waitFor: null,
+    spotlight: () => document.querySelector(".week-grid"),
+    tooltipPos: "below",
+  },
+  {
+    id: "rate_week",
+    eyebrow: "Step 5 of 14",
+    title: "Rate a week",
+    body: "Click any past week (or the current one) to score it 1–5, write a note about what happened, and attach a photo. Be honest — no one else is watching.",
+    action: "Try clicking a week square now — close the modal when done.",
     waitFor: "week_clicked",
-    spotlight: null,
-    tooltipPos: "bottom-right",
-    noRing: true,
-  },
-  {
-    id: "stats_overview",
-    eyebrow: "Step 5 of 8",
-    title: "Your stats & overview",
-    body: "The stats bar at the top shows weeks elapsed, weeks scored, your average score, and weeks remaining. It updates in real-time as you score your weeks.",
-    action: null,
-    waitFor: null,
-    spotlight: () => {
-      const yv = document.getElementById("yearViewRoot");
-      if (yv) return yv.querySelector(".stats-card");
-      return document.querySelector(".stats-card");
-    },
-    tooltipPos: "below",
-  },
-  {
-    id: "full_overview",
-    eyebrow: "Step 6 of 8",
-    title: "Back to full overview",
-    body: "At any time, click the \"← Overview\" button to return to the full overview of all your years. This is your home base.",
-    action: "Click \"← Overview\" to return to the main view",
-    waitFor: "overview_opened",
-    spotlight: () => document.getElementById("sidebarMainBtn"),
-    tooltipPos: "below",
-  },
-  {
-    id: "focus_year",
-    eyebrow: "Step 7 of 8",
-    title: "Focus view & features",
-    body: "Click \"Focus →\" on any year to open the full year view. Inside you'll find: Week Overview, Week Highlights, Rate Your Year, and a Letter to Future Self.",
-    action: null,
-    waitFor: null,
-    spotlight: () => document.querySelector("[data-focus-year]") || document.querySelector(".year-badges"),
+    spotlight: () => document.querySelector(".week-cell.clickable"),
     tooltipPos: "below",
     scrollToFocus: true,
   },
   {
-    id: "install_app",
-    eyebrow: "Step 8 of 8 · Final tip",
-    title: "Install as an app 📲",
-    body: "Want faster access? Click \"Install as app →\" at the top to add MBBS Life Tracker to your home screen — it works like a native app, even offline.",
+    id: "week_highlights",
+    eyebrow: "Step 6 of 14",
+    title: "Week highlights",
+    body: "Any week you add a note or photo to shows up here as a highlight. Over time this becomes a personal diary of your MBBS — moments you'd otherwise forget.",
     action: null,
     waitFor: null,
-    spotlight: () => document.querySelector("button[onclick='openSetupGuide()']"),
+    spotlight: () => {
+      // Find the Week highlights card on the home tab
+      const cards = document.querySelectorAll(".card");
+      for (const c of cards) {
+        if (c.innerText && c.innerText.includes("Week highlights")) return c;
+      }
+      return null;
+    },
     tooltipPos: "below",
-    autoNext: false,
+  },
+  {
+    id: "insights_tab",
+    eyebrow: "Step 7 of 14",
+    title: "Insights tab",
+    body: "Tap the <strong>Insights</strong> tab to explore your score trend chart, best and worst weeks, a \"This Time Last Year\" memory card, and an All Years overview. Go ahead — tap it now to take a look.",
+    action: "Tap the Insights tab in the bar above",
+    waitFor: "insights_tab_clicked",
+    onEnter: () => {
+      // Make sure we're showing the home tab first so the user can see/tap Insights
+      const yv = document.getElementById("yearViewRoot");
+      if (yv) yv.remove();
+      if (state.activeTab !== "home") { state.activeTab = "home"; render(); }
+    },
+    spotlight: () => {
+      const tabs = document.querySelectorAll(".tab-btn[data-tab]");
+      for (const t of tabs) { if (t.dataset.tab === "insights") return t; }
+      return document.querySelector(".tabbar");
+    },
+    tooltipPos: "below",
+  },
+  {
+    id: "exams_tab",
+    eyebrow: "Step 8 of 14",
+    title: "Exams tab",
+    body: "Now tap the <strong>Exams</strong> tab. Here you can add upcoming exams — Profs, Internals, NEET PG, Practicals — and it counts down the days. Exams less than 5 days away also appear as an alert on the Home tab.",
+    action: "Tap the Exams tab in the bar above",
+    waitFor: "exams_tab_clicked",
+    spotlight: () => {
+      const tabs = document.querySelectorAll(".tab-btn[data-tab]");
+      for (const t of tabs) { if (t.dataset.tab === "exams") return t; }
+      return document.querySelector(".tabbar");
+    },
+    tooltipPos: "below",
+  },
+  {
+    id: "install_app",
+    eyebrow: "Step 9 of 14",
+    title: "Install as an app",
+    body: "Tap <strong>\"Install as app →\"</strong> at the top of the page to add MBBS Life Tracker to your home screen or desktop. It works offline and feels just like a native app — no app store needed.",
+    action: "Tap \"Install as app →\" to continue",
+    waitFor: "install_app_clicked",
+    onEnter: () => {
+      // Switch back to home tab so the install button is visible
+      if (state.activeTab !== "home") { state.activeTab = "home"; render(); }
+      const yv = document.getElementById("yearViewRoot");
+      if (yv) yv.remove();
+    },
+    spotlight: () => document.querySelector("#retakeTourBtn")?.previousElementSibling || document.querySelector("[onclick='openSetupGuide()']"),
+    tooltipPos: "below",
+  },
+  {
+    id: "focus_year",
+    eyebrow: "Step 10 of 14",
+    title: "Focus view — go deeper",
+    body: "Click <strong>\"Focus →\"</strong> on your current year to open a full dedicated view. Inside you'll find a detailed weekly overview, a highlights gallery, a letter to your future self, and a year reflection card. This is the heart of the app.",
+    action: "Click \"Focus →\" on your current year to continue",
+    waitFor: "year_focused",
+    onEnter: () => {
+      // Make sure we're on home tab and no year view is open
+      if (state.activeTab !== "home") { state.activeTab = "home"; render(); }
+      const yv = document.getElementById("yearViewRoot");
+      if (yv) yv.remove();
+    },
+    spotlight: () => document.querySelector("[data-focus-year]"),
+    tooltipPos: "below",
+    scrollToFocus: true,
+  },
+  {
+    id: "year_stats_overview",
+    eyebrow: "Step 11 of 14",
+    title: "Year stats at a glance",
+    body: "At the top of the year view you'll see key stats — weeks elapsed, average score, and your streak. Tap <strong>\"View all stats →\"</strong> to open a detailed breakdown: best &amp; worst weeks, score distribution, and more.",
+    action: null,
+    waitFor: null,
+    onEnter: () => {
+      // If year view isn't open yet, open the current year
+      if (!document.getElementById("yearViewRoot")) {
+        const currentYearId = getCurrentYearId();
+        if (currentYearId) { state.yearView = currentYearId; renderYearView(currentYearId); }
+      }
+    },
+    spotlight: () => {
+      const yv = document.getElementById("yearViewRoot");
+      if (!yv) return null;
+      // Find the "View all stats" button
+      const btns = yv.querySelectorAll("button, .view-all-stats-btn");
+      for (const b of btns) {
+        if (b.innerText && b.innerText.toLowerCase().includes("stat")) return b;
+      }
+      // Fallback: find the stats summary area at the top of the year view
+      return yv.querySelector(".stats-card") || yv.querySelector("[class*='stat']") || null;
+    },
+    tooltipPos: "below",
+    scrollToFocus: false,
+  },
+  {
+    id: "week_highlights_gallery",
+    eyebrow: "Step 12 of 14",
+    title: "Week highlights gallery",
+    body: "Below the stats you'll find a <strong>highlights gallery</strong> — every week where you wrote a note or attached a photo shows up here. It becomes a visual diary of your year over time.",
+    action: null,
+    waitFor: null,
+    onEnter: () => {
+      if (!document.getElementById("yearViewRoot")) {
+        const currentYearId = getCurrentYearId();
+        if (currentYearId) { state.yearView = currentYearId; renderYearView(currentYearId); }
+      }
+    },
+    spotlight: () => {
+      const yv = document.getElementById("yearViewRoot");
+      if (!yv) return null;
+      // The highlights section is a .card div whose direct text includes "Week highlights"
+      const cards = yv.querySelectorAll(".card");
+      for (const c of cards) {
+        // Check only immediate child text nodes / shallow children, not deep descendants
+        const headings = c.querySelectorAll("[style*='Playfair'], [style*='playfair']");
+        for (const h of headings) {
+          if (h.innerText && h.innerText.includes("Week highlights")) return c;
+        }
+      }
+      // Fallback: any card whose innerText starts with Week highlights (not buried deep)
+      for (const c of cards) {
+        if ((c.innerText || "").trimStart().startsWith("Week highlights")) return c;
+      }
+      return null;
+    },
+    tooltipPos: "below",
+    scrollToFocus: true,
+  },
+  {
+    id: "letter_to_self",
+    eyebrow: "Step 13 of 14",
+    title: "Letter to my future self",
+    body: "Scroll down to find the <strong>Letter to my future self</strong> card. In the first two weeks of each year, write anything you want your future self to read — hopes, worries, goals. It stays sealed until the year ends.",
+    action: null,
+    waitFor: null,
+    onEnter: () => {
+      if (!document.getElementById("yearViewRoot")) {
+        const currentYearId = getCurrentYearId();
+        if (currentYearId) { state.yearView = currentYearId; renderYearView(currentYearId); }
+      }
+    },
+    spotlight: () => {
+      const yv = document.getElementById("yearViewRoot");
+      if (!yv) return null;
+      // .letter-card is the specific class for this section
+      const lc = yv.querySelector(".letter-card");
+      if (lc) return lc;
+      // Fallback: find by heading text inside a card
+      const cards = yv.querySelectorAll(".card");
+      for (const c of cards) {
+        if ((c.innerText || "").includes("Letter to my future self")) return c;
+      }
+      return null;
+    },
+    tooltipPos: "below",
+    scrollToFocus: true,
+  },
+  {
+    id: "year_note_reflection",
+    eyebrow: "Step 14 of 14 · Final tip",
+    title: "Year note & reflection",
+    body: "Finally, the <strong>Year note / reflection</strong> card lets you rate the year overall and jot down your biggest takeaway. At the end of each year this becomes your reflection — a snapshot of who you were and how far you've come.",
+    action: null,
+    waitFor: null,
+    onEnter: () => {
+      if (!document.getElementById("yearViewRoot")) {
+        const currentYearId = getCurrentYearId();
+        if (currentYearId) { state.yearView = currentYearId; renderYearView(currentYearId); }
+      }
+    },
+    spotlight: () => {
+      const yv = document.getElementById("yearViewRoot");
+      if (!yv) return null;
+      // .year-reflection-card is the specific class for this section
+      const rc = yv.querySelector(".year-reflection-card");
+      if (rc) return rc;
+      // Fallback: card containing "Year note" or "Year reflection" heading
+      const cards = yv.querySelectorAll(".card");
+      for (const c of cards) {
+        const t = c.innerText || "";
+        if (t.includes("Year note") || t.includes("Year reflection")) return c;
+      }
+      return null;
+    },
+    tooltipPos: "below",
+    scrollToFocus: true,
     isLast: true,
   },
 ];
@@ -4095,6 +4696,19 @@ function startTutorial() {
   _tutWaitingForAction = false;
   _tutNavigatingBack = false;
   _renderTutorialStep();
+}
+
+function _retakeTour() {
+  // Clean up any in-progress tour first, then re-enable
+  _closeTutorial();
+  localStorage.removeItem("mbbs_tutorial_done");
+  setTimeout(() => {
+    _tutStep = 0;
+    _tutActive = true;
+    _tutWaitingForAction = false;
+    _tutNavigatingBack = false;
+    _renderTutorialStep();
+  }, 100);
 }
 
 function _closeTutorial() {
@@ -4168,6 +4782,9 @@ function _renderTutorialStep() {
   const step = TUT_STEPS[_tutStep];
   if (!step) { _closeTutorial(); return; }
 
+  // Run any step-specific setup (e.g. close overlays, switch tabs)
+  if (step.onEnter) step.onEnter();
+
   // Cancel any pending observer from previous step
   if (_tutActiveObserver) { _tutActiveObserver.disconnect(); _tutActiveObserver = null; }
   _tutWaitingForAction = false;
@@ -4181,7 +4798,7 @@ function _renderTutorialStep() {
   if (hasRing) {
     const targetEl = step.spotlight();
     if (targetEl) {
-      const scrollTarget = step.scrollToFocus
+      const scrollTarget = (step.scrollToFocus && step.id === "focus_year")
         ? (document.querySelector("[data-focus-year]") || targetEl)
         : targetEl;
       scrollTarget.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -4290,10 +4907,10 @@ function _createTooltip(step, spotRect) {
 
   const isFirst = _tutStep === 0;
   const isLast = step.isLast;
-  // Steps 1, 2 & 4 wait for user action — show "Skip this step" since the action triggers auto-advance
-  // All other steps: show "Next →" or "Finish tour ✓"
-  const isActionGated = step.waitFor === "date_selected" || step.waitFor === "calendar_built" || step.waitFor === "week_clicked";
-  const nextLabel = isLast ? "Finish tour ✓" : (isActionGated ? "Skip this step" : "Next →");
+  // Only steps 1, 2, and 5 show "Skip this step" — because skipping them ends the tour
+  // All other waitFor steps (tab clicks, install, focus) show "Next →" since they can be bypassed normally
+  const isSkipGated = step.waitFor === "date_selected" || step.waitFor === "calendar_built" || step.waitFor === "week_clicked";
+  const nextLabel = isLast ? "Finish tour ✓" : (isSkipGated ? "Skip this step" : "Next →");
 
   const backHtml = !isFirst
     ? `<button class="tut-btn-back" id="_tutBackBtn">← Back</button>`
@@ -4310,7 +4927,7 @@ function _createTooltip(step, spotRect) {
     ${actionHtml}
     <div class="tut-tooltip-footer">
       <div class="tut-tooltip-progress">${dots}</div>
-      <div style="display:flex;gap:8px;align-items:center">
+      <div style="display:flex;gap:8px;align-items:center;flex-shrink:0">
         ${exitHtml}
         ${backHtml}
         <button class="tut-btn-next" id="_tutNextBtn">${nextLabel}</button>
@@ -4332,6 +4949,8 @@ function _createTooltip(step, spotRect) {
   document.getElementById("_tutNextBtn").addEventListener("click", () => {
     if (isLast) { _closeTutorial(); return; }
     _tutWaitingForAction = false;
+    // Cancel any active observer so it doesn't fire after skip
+    if (_tutActiveObserver) { _tutActiveObserver.disconnect(); _tutActiveObserver = null; }
     // If user skips step 1 (date) or step 2 (build), end the tour — nothing to show
     if (step.waitFor === "date_selected" || step.waitFor === "calendar_built") { _closeTutorial(); return; }
     _nextTutStep();
@@ -4494,10 +5113,25 @@ function _watchForAction(actionType) {
       if (!_tutWaitingForAction) return;
       _tutWaitingForAction = false;
       btn.removeEventListener("click", handler);
-      // Wait for render to complete
+      // Immediately force yearView to null so render() never opens the overlay
+      state.yearView = null;
+      // Remove any yearViewRoot that may have already appeared
+      const yv0 = document.getElementById("yearViewRoot");
+      if (yv0) yv0.remove();
+      // Watch via MutationObserver and keep killing yearViewRoot if it appears
+      const killObs = new MutationObserver(() => {
+        const yv = document.getElementById("yearViewRoot");
+        if (yv) { yv.remove(); state.yearView = null; }
+      });
+      killObs.observe(document.body, { childList: true, subtree: false });
+      // After a safe delay, stop killing and advance
       setTimeout(() => {
+        killObs.disconnect();
+        state.yearView = null;
+        const yv2 = document.getElementById("yearViewRoot");
+        if (yv2) yv2.remove();
         _nextTutStep();
-      }, 800);
+      }, 900);
     };
     btn.addEventListener("click", handler);
     // Also watch if calendar already built (startDate set)
@@ -4543,13 +5177,87 @@ function _watchForAction(actionType) {
     obs.observe(document.body, { childList: true, subtree: true });
   }
 
+  else if (actionType === "insights_tab_clicked") {
+    // Watch for user tapping the Insights tab
+    const attachWatcher = () => {
+      document.querySelectorAll(".tab-btn[data-tab]").forEach(btn => {
+        if (btn.dataset.tab !== "insights") return;
+        if (btn._tutInsightsHandler) return;
+        const h = () => {
+          if (!_tutWaitingForAction) return;
+          _tutWaitingForAction = false;
+          btn._tutInsightsHandler = null;
+          setTimeout(_nextTutStep, 600);
+        };
+        btn._tutInsightsHandler = h;
+        btn.addEventListener("click", h, { once: true });
+      });
+    };
+    attachWatcher();
+    const obs = new MutationObserver(() => { if (!_tutWaitingForAction) { obs.disconnect(); return; } attachWatcher(); });
+    obs.observe(document.body, { childList: true, subtree: true });
+    _tutActiveObserver = obs;
+  }
+
+  else if (actionType === "exams_tab_clicked") {
+    // Watch for user tapping the Exams tab
+    const attachWatcher = () => {
+      document.querySelectorAll(".tab-btn[data-tab]").forEach(btn => {
+        if (btn.dataset.tab !== "exams") return;
+        if (btn._tutExamsHandler) return;
+        const h = () => {
+          if (!_tutWaitingForAction) return;
+          _tutWaitingForAction = false;
+          btn._tutExamsHandler = null;
+          setTimeout(_nextTutStep, 600);
+        };
+        btn._tutExamsHandler = h;
+        btn.addEventListener("click", h, { once: true });
+      });
+    };
+    attachWatcher();
+    const obs = new MutationObserver(() => { if (!_tutWaitingForAction) { obs.disconnect(); return; } attachWatcher(); });
+    obs.observe(document.body, { childList: true, subtree: true });
+    _tutActiveObserver = obs;
+  }
+
+  else if (actionType === "install_app_clicked") {
+    // Watch for the install/setup guide button click — hide tooltip immediately on click
+    const installBtn = document.querySelector("[onclick='openSetupGuide()']") ||
+                       document.querySelector("#retakeTourBtn")?.previousElementSibling;
+    if (!installBtn) { setTimeout(_nextTutStep, 400); return; }
+    const handler = () => {
+      if (!_tutWaitingForAction) return;
+      _tutWaitingForAction = false;
+      installBtn.removeEventListener("click", handler);
+      // Immediately hide ring and tooltip
+      document.getElementById("_tutRing")?.remove();
+      const tip = document.getElementById("_tutTooltip");
+      if (tip) { tip.style.opacity = "0"; setTimeout(() => tip.remove(), 250); }
+      // Advance after a moment
+      setTimeout(_nextTutStep, 900);
+    };
+    installBtn.addEventListener("click", handler);
+  }
+
   else if (actionType === "year_focused") {
-    // Watch for year view root to appear
+    // Watch for year view root to appear — hide tooltip as soon as Focus is clicked
+    const focusBtn = document.querySelector("[data-focus-year]");
+    if (focusBtn) {
+      const hideHandler = () => {
+        document.getElementById("_tutRing")?.remove();
+        const tip = document.getElementById("_tutTooltip");
+        if (tip) { tip.style.opacity = "0"; }
+      };
+      focusBtn.addEventListener("click", hideHandler, { once: true });
+    }
     const observer = new MutationObserver(() => {
       if (!_tutWaitingForAction) return;
       if (document.getElementById("yearViewRoot")) {
         _tutWaitingForAction = false;
         observer.disconnect();
+        // Remove tooltip fully now
+        document.getElementById("_tutTooltip")?.remove();
         setTimeout(_nextTutStep, 600);
       }
     });
@@ -4603,8 +5311,8 @@ window.addEventListener("scroll", () => {
 document.addEventListener("click", (e) => {
   if (!_tutActive || _tutPaused) return;
 
-  // Allow clicks on: the tooltip, the ring, the pause backdrop, week cells (step 4 expects them),
-  // action-gated elements (date input, build btn, sidebar btn), and any step that explicitly waits for a click
+  // Allow clicks on: the tooltip, the ring, the pause backdrop, week cells (step 5 expects them),
+  // action-gated elements (date input, build btn), and any step that explicitly waits for a click
   const step = TUT_STEPS[_tutStep];
   const tip  = document.getElementById("_tutTooltip");
   const ring = document.getElementById("_tutRing");
@@ -4619,10 +5327,6 @@ document.addEventListener("click", (e) => {
     // Clicking a week cell is the expected action — don't pause
     if (e.target.closest(".week-cell")) return;
   }
-  if (step.waitFor === "overview_opened") {
-    // Clicking the sidebar overview button is the expected action — don't pause
-    if (e.target.closest("#sidebarMainBtn") || e.target.id === "sidebarMainBtn") return;
-  }
   if (step.waitFor === "date_selected") {
     // Clicking/interacting with date input is expected — don't pause
     if (e.target.closest(".card") || e.target.id === "dateInput") return;
@@ -4631,9 +5335,26 @@ document.addEventListener("click", (e) => {
     // Clicking the build button is expected — don't pause
     if (e.target.id === "buildBtn" || e.target.closest("#buildBtn")) return;
   }
+  if (step.waitFor === "insights_tab_clicked") {
+    // Clicking the Insights tab is the expected action — don't pause
+    if (e.target.closest(".tab-btn[data-tab='insights']")) return;
+  }
+  if (step.waitFor === "exams_tab_clicked") {
+    // Clicking the Exams tab is the expected action — don't pause
+    if (e.target.closest(".tab-btn[data-tab='exams']")) return;
+  }
 
   // Also allow theme toggle and other utility buttons that shouldn't break the tour
   if (e.target.id === "themeToggle") return;
+
+  // On the install_app step (step 9), allow clicking the install button and anything in the setup guide
+  if (step.id === "install_app" && (e.target.closest("[onclick='openSetupGuide()']") || e.target.closest("#sgBackdrop") || document.getElementById("sgBackdrop"))) return;
+  // Also allow if waitFor is install_app_clicked
+  if (step.waitFor === "install_app_clicked" && (e.target.closest("[onclick='openSetupGuide()']") || e.target.closest("#sgBackdrop") || document.getElementById("sgBackdrop"))) return;
+
+  // On the focus_year step (step 10), allow clicking the Focus button — it opens year view
+  if (step.id === "focus_year" && e.target.closest("[data-focus-year]")) return;
+  if (step.waitFor === "year_focused" && e.target.closest("[data-focus-year]")) return;
 
   // Any other click is "unexpected" — pause the tour
   _pauseTutorial();
